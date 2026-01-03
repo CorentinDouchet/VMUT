@@ -1,0 +1,138 @@
+/* Status indicators for vulnerabilities */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Table alignment fixes */
+.cve-table {
+  table-layout: auto;
+  width: 100%;
+}
+
+.cve-table th,
+.cve-table td {
+  min-width: 60px;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cve-table th:nth-child(14), /* COMMENTAIRES column */
+.cve-table td:nth-child(14) {
+  min-width: 120px;
+  max-width: 160px;
+}
+
+.status-complete {
+  background-color: #10b981;
+  color: white;
+}
+
+.status-validated {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.status-analyzed {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.status-pending {
+  background-color: #94a3b8;
+  color: white;
+}
+
+/* Comment indicators */
+.comment-indicators {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.comment-indicator {
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-size: 0.8em;
+  border: 1px solid #e2e8f0;
+  position: relative;
+}
+
+.comment-indicator.analyst {
+  background-color: #fef3c7;
+  border-color: #fbbf24;
+}
+
+.comment-indicator.validator {
+  background-color: #dcfce7;
+  border-color: #22c55e;
+}
+
+.comment-indicator.has-comment {
+  opacity: 1;
+  font-weight: 500;
+}
+
+.comment-indicator.no-comment {
+  opacity: 0.4;
+}
+
+/* Action button improvements */
+.btn-icon {
+  position: relative;
+}
+
+.btn-icon .badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #ef4444;
+  color: white;
+  border-radius: 50%;
+  padding: 1px 4px;
+  font-size: 0.7em;
+  min-width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Status animations */
+.status-badge.status-complete {
+  animation: pulse-complete 2s infinite;
+}
+
+@keyframes pulse-complete {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Comment count in button */
+.comment-button-indicator {
+  background: linear-gradient(45deg, #f59e0b, #3b82f6);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .comment-indicators {
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .comment-indicator {
+    font-size: 0.7em;
+    padding: 1px 4px;
+  }
+}

@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+/* styles/index.css */
+
+/* Import de la police */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* Variables globales */
+@import './variables.css';
+
+/* Reset et styles de base */
+@import './reset.css' layer(base);
+
+/* Layout */
+/* @import './layout/topbar.css'; */
+/* @import './layout/sidebar.css'; */
+/* @import './layout/main-content.css'; */
+
+/* Components */
+@import './components/buttons.css' layer(components);
+@import './components/inputs.css' layer(components);
+@import './components/status-indicators.css' layer(components);
+@import './components/error-states.css' layer(components);
+@import './components/cards.css' layer(components);
+@import './components/modals.css' layer(components);
+@import './components/filters.css' layer(components);
+@import './components/cvss-calculator.css' layer(components);
+@import './components/comments.css' layer(components);
+
+/* Pages */
+
+/* Utilities */
+@import './utilities.css' layer(components);

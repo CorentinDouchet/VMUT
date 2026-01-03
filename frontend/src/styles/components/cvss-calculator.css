@@ -1,0 +1,826 @@
+/* styles/components/cvss-calculator.css */
+
+.cvss-calculator {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.cvss-calculator.modal-xlarge {
+  max-width: 1600px !important;
+  width: 98% !important;
+  max-height: 95vh !important;
+}
+
+.cvss-header {
+  padding: 24px 30px;
+  border-bottom: 2px solid #e5e7eb;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cvss-header h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+  color: white;
+}
+
+.cvss-link {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  transition: all 0.2s;
+}
+
+.cvss-link:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+/* Tabs */
+.cvss-tabs {
+  display: flex;
+  gap: 0;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0 30px;
+}
+
+.cvss-tab {
+  padding: 14px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b7280;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.cvss-tab:hover {
+  color: #374151;
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.cvss-tab.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+  background: white;
+}
+
+/* Content */
+.cvss-content {
+  padding: 30px;
+  background: #f9fafb;
+  min-height: 400px;
+  max-height: calc(90vh - 350px);
+  overflow-y: auto;
+}
+
+/* Metric Groups */
+.cvss-metric-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.cvss-metric {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.cvss-metric:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
+}
+
+.cvss-metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.cvss-metric-header label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.cvss-metric-short {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.cvss-metric-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cvss-metric-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 10px 14px;
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+  position: relative;
+}
+
+.cvss-metric-btn:hover {
+  background: #f3f4f6;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+}
+
+.cvss-metric-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.cvss-metric-btn.active::before {
+  content: '✓';
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+/* Tooltip - Hidden by default, shown on hover */
+.cvss-metric-tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.6;
+  max-width: 320px;
+  min-width: 250px;
+  width: max-content;
+  z-index: 10000;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.cvss-option:hover .cvss-metric-tooltip {
+  display: block;
+  animation: tooltipFadeIn 0.2s ease;
+}
+
+.cvss-metric-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #1f2937;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Results */
+.cvss-results {
+  padding: 24px 30px;
+  background: white;
+  border-top: 2px solid #e5e7eb;
+}
+
+.cvss-score-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.cvss-score-card {
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 2px solid;
+  transition: all 0.2s;
+}
+
+.cvss-score-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.cvss-score-card.none {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+}
+
+.cvss-score-card.low {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-color: #fbbf24;
+}
+
+.cvss-score-card.medium {
+  background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%);
+  border-color: #f97316;
+}
+
+.cvss-score-card.high {
+  background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
+  border-color: #ef4444;
+}
+
+.cvss-score-card.critical {
+  background: linear-gradient(135deg, #fca5a5 0%, #dc2626 100%);
+  border-color: #991b1b;
+  color: white;
+}
+
+.cvss-score-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+  margin-bottom: 8px;
+}
+
+.cvss-score-value {
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.cvss-score-severity {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cvss-score-card.critical .cvss-score-label,
+.cvss-score-card.critical .cvss-score-severity {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.cvss-vector {
+  margin-top: 20px;
+}
+
+.cvss-vector label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.cvss-vector-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: #111827;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cvss-vector-input:hover {
+  background: #f3f4f6;
+  border-color: #cbd5e1;
+}
+
+.cvss-vector-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  background: white;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .cvss-metric-group {
+    grid-template-columns: 1fr;
+  }
+  
+  .cvss-score-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .cvss-header {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+  
+  .cvss-tabs {
+    padding: 0 15px;
+    overflow-x: auto;
+  }
+  
+  .cvss-tab {
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+  
+  .cvss-content {
+    padding: 20px 15px;
+  }
+}
+
+/* Grid Layout for Calculator */
+.cvss-calculator-grid {
+  display: grid;
+  gap: 16px;
+  height: 100%;
+  overflow: hidden;
+  padding: 0 10px;
+}
+
+.cvss-calculator-grid.v3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.cvss-calculator-grid.v4 {
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+.cvss-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cvss-group-container {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  height: 100%;
+}
+
+.cvss-group-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #e5e7eb;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cvss-sub-group-header {
+  font-size: 12px;
+  font-weight: 700;
+  color: #4b5563;
+  margin: 12px 0 8px 0;
+  text-transform: uppercase;
+}
+
+/* Compact Metric Styles */
+.cvss-metric-compact {
+  margin-bottom: 6px;
+}
+
+.cvss-metric-compact .cvss-metric-header {
+  margin-bottom: 2px;
+  padding-bottom: 0;
+  border-bottom: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cvss-metric-compact .cvss-metric-label {
+  font-size: 12px;
+  margin: 0;
+}
+
+.cvss-metric-compact .metric-short {
+  font-size: 10px;
+  padding: 1px 4px;
+}
+
+.cvss-metric-compact .cvss-metric-options {
+  gap: 4px;
+}
+
+.cvss-metric-compact .cvss-metric-btn {
+  padding: 4px 8px;
+  font-size: 11px;
+  min-width: 40px;
+  flex: 1;
+}
+
+.cvss-metric-compact .cvss-metric-btn::before {
+  font-size: 8px;
+  top: 2px;
+  right: 2px;
+}
+
+/* Hide descriptions in compact mode to save space */
+.cvss-metrics-container .section-description {
+  display: none;
+}
+
+.cvss-metrics-container .section-header {
+  margin-bottom: 8px;
+}
+
+.cvss-metrics-container .section-title {
+  font-size: 14px;
+  margin: 0;
+}
+
+/* Adjust modal body for grid */
+.cvss-calculator .modal-body {
+  padding: 16px;
+  overflow-y: auto;
+  max-height: calc(95vh - 200px); /* Adjust based on header/footer height */
+}
+
+/* Layout 2 colonnes */
+.cvss-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  overflow: visible;
+}
+
+.metrics-category {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: visible;
+}
+
+.metrics-category h4 {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 6px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Groupes de métriques */
+.cvss-metric-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: visible;
+}
+
+.cvss-metric-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.metric-short {
+  font-weight: 400;
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+/* Boutons - Style Cyberwatch compact */
+.cvss-metric-options {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  overflow: visible;
+}
+
+.cvss-option {
+  min-width: 55px;
+  height: 44px;
+  padding: 6px 8px;
+  background: #f9fafb;
+  border: 1.5px solid #d1d5db;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  position: relative;
+}
+
+.cvss-option:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.cvss-option.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
+.cvss-option.active::after {
+  content: '✓';
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  font-size: 9px;
+  font-weight: bold;
+  color: white;
+}
+
+.option-value {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: #111827;
+}
+
+.cvss-option.active .option-value {
+  color: white;
+}
+
+.option-label {
+  font-size: 9px;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: capitalize;
+  line-height: 1;
+}
+
+.cvss-option.active .option-label {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* Footer */
+.cvss-calculator .modal-footer {
+  padding: 14px 30px;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+}
+
+.cvss-calculator .modal-footer .btn {
+  padding: 9px 18px;
+  font-weight: 600;
+  font-size: 13px;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+
+.cvss-calculator .modal-footer .btn-secondary {
+  background: white;
+  border: 1px solid #d1d5db;
+  color: #374151;
+}
+
+.cvss-calculator .modal-footer .btn-secondary:hover {
+  background: #f9fafb;
+}
+
+.cvss-calculator .modal-footer .btn-primary {
+  background: #3b82f6;
+  border: none;
+  color: white;
+}
+
+.cvss-calculator .modal-footer .btn-primary:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.cvss-calculator .modal-footer .btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .cvss-metrics {
+    grid-template-columns: 1fr;
+  }
+  
+  .cvss-scores-display.four-cols {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .cvss-scores-display {
+    flex-direction: column;
+  }
+  
+  .cvss-option {
+    min-width: 70px;
+    padding: 8px 12px;
+  }
+  
+  .modal-xlarge {
+    width: 98%;
+    max-height: 95vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .cvss-metric-options {
+    flex-direction: column;
+  }
+  
+  .cvss-option {
+    min-width: 100%;
+  }
+}
+
+/* Fix pour les tooltips - permettre le débordement horizontal mais scroll vertical */
+.cvss-calculator .modal-body {
+  overflow-x: clip;
+  overflow-y: auto;
+  padding-left: 30px;
+  padding-right: 30px;
+}
+
+.cvss-calculator .modal-content {
+  overflow: visible;
+}
+
+.cvss-metrics-container,
+.cvss-metrics,
+.metrics-category,
+.cvss-metric-group,
+.cvss-metric-options {
+  overflow: visible !important;
+}
+
+/* Scrollbar personnalisée */
+.cvss-calculator .modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cvss-calculator .modal-body::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
+.cvss-calculator .modal-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.cvss-calculator .modal-body::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}  
+/* Grid layout pour 2 colonnes de metriques */  
+.cvss-metrics-grid {  
+  display: grid;  
+  grid-template-columns: repeat(2, 1fr);  
+  gap: 2rem;  
+  margin-top: 1.5rem;  
+}  
+  
+.metrics-column {  
+  display: flex;  
+  flex-direction: column;  
+  gap: 1.5rem;  
+}  
+  
+.metrics-category-title {  
+  font-size: 0.95rem;  
+  font-weight: 600;  
+  color: #374151;  
+  margin: 0 0 1rem 0;  
+  padding-bottom: 0.5rem;  
+  border-bottom: 2px solid #e5e7eb;  
+} 
+.cvss-section-header {  
+  margin-bottom: 1rem;  
+}  
+.cvss-metrics-section {  
+  margin-bottom: 2rem;  
+} 
+  
+/* Tooltip for metric labels */  
+.cvss-metric-label[title] {  
+  cursor: help;  
+  position: relative;  
+  display: inline-block;  
+  border-bottom: 1px dotted #9ca3af;  
+} 
+  
+.cvss-metric-label[title]:hover {  
+  color: #667eea;  
+  border-bottom-color: #667eea;  
+} 
+  
+/* Custom tooltip wrapper for metric labels */  
+.metric-tooltip-wrapper {  
+  position: relative;  
+  display: inline-block;  
+  cursor: help;  
+} 
+  
+.metric-tooltip-wrapper:hover .cvss-metric-label {  
+  color: #667eea;  
+  border-bottom: 1px dotted #667eea;  
+} 
+  
+/* Custom tooltip content */  
+.cvss-custom-tooltip {  
+  position: absolute;  
+  bottom: 100%;  
+  left: 50%;  
+  transform: translateX(-50%) translateY(-8px);  
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);  
+  color: #ffffff !important;  
+  padding: 12px 16px;  
+  border-radius: 8px;  
+  font-size: 13px;  
+  font-weight: 400;  
+  line-height: 1.5;  
+  max-width: 400px;  
+  min-width: 250px;  
+  z-index: 10000;  
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);  
+  pointer-events: none;  
+  white-space: normal;  
+  animation: tooltipFadeIn 0.2s ease-out;  
+} 
+  
+/* Tooltip arrow */  
+.cvss-custom-tooltip::after {  
+  content: '';  
+  position: absolute;  
+  top: 100%;  
+  left: 50%;  
+  transform: translateX(-50%);  
+  border: 6px solid transparent;  
+  border-top-color: #111827;  
+} 
+  
+/* Tooltip animation */  
+@keyframes tooltipFadeIn {  
+  from {  
+    opacity: 0;  
+    transform: translateX(-50%) translateY(-4px);  
+  }  
+  to {  
+    opacity: 1;  
+    transform: translateX(-50%) translateY(-8px);  
+  }  
+} 
+  
+/* Ensure tooltip is above modal content */  
+.cvss-calculator {  
+  position: relative;  
+  z-index: 1;  
+} 
