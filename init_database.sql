@@ -9,7 +9,7 @@
 --                         obsolescence_migration.sql + add_obsolescence_columns.sql +
 --                         update_validity_status.sql + setup_fixed.sql
 -- 
--- Utilisation : psql -U postgres -d cve_toolbox -f init_database.sql
+-- Utilisation : psql -U postgres -d mbdhackuity -f init_database.sql
 -- 
 -- Ordre d'exécution :
 --   1. Connexion à la base
@@ -28,7 +28,7 @@
 -- Date : 2026-01-06
 -- ========================================
 
-\c cve_toolbox
+\c mbdhackuity
 
 -- ========================================
 -- PARTIE 1: TABLES DE BASE - CVEs
@@ -181,6 +181,9 @@ CREATE TABLE vulnerability_results (
     modified_severity VARCHAR(20),
     modified_vector TEXT,
     rssi_status VARCHAR(50),
+    -- Colonnes de traçabilité des modifications
+    modified_at TIMESTAMP,
+    modified_by VARCHAR(255),
     -- Colonnes obsolescence
     obsolescence_detected BOOLEAN DEFAULT FALSE,
     obsolescence_info TEXT,
@@ -530,12 +533,12 @@ INSERT INTO asset_groups (name, description, created_by)
 VALUES ('Non classé', 'Groupe par défaut pour les assets non affectés', 'system')
 ON CONFLICT (name) DO NOTHING;
 
--- Utilisateur maintenance (mot de passe : maintenance)
+-- Utilisateur maintenance (mot de passe : admin@2025)
 INSERT INTO users (username, email, password, role, first_name, last_name, enabled)
 VALUES (
     'maintenance',
     'maintenance@vmut.local',
-    '$2a$10$8vJZYnJ5K5K5K5K5K5K5K.eZQYH5pZnH5pH5pH5pH5pH5pH5pH5pO',
+    '$2b$12$vxnnTCe.cAowRJ0aYvlZ6Ob/7cfNZPab2BTBfHwshy3Wyt3nmOwae',
     'MAINTENANCE',
     'Admin',
     'Maintenance',
@@ -625,7 +628,7 @@ BEGIN
 END $$;
 
 -- Accorder toutes les permissions à mbdhackuity et postgres
-GRANT ALL PRIVILEGES ON DATABASE cve_toolbox TO mbdhackuity;
+GRANT ALL PRIVILEGES ON DATABASE mbdhackuity TO mbdhackuity;
 GRANT ALL PRIVILEGES ON SCHEMA public TO mbdhackuity;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO mbdhackuity;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO mbdhackuity;
