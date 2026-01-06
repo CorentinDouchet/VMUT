@@ -1,5 +1,5 @@
 -- ========================================
--- SCRIPT DE SETUP COMPLET VMUT - VERSION UNIFIÉE
+-- SCRIPT DE SETUP COMPLET VMUT - VERSION UNIFIÉE ET CORRIGÉE
 -- VMUT - Vulnerability Management Unified Tool
 -- ========================================
 -- Description : Script SQL unique pour la création complète de la base de données
@@ -8,33 +8,42 @@
 --               Regroupe : setup_complete.sql + technology_obsolescence.sql +
 --                         obsolescence_migration.sql + add_obsolescence_columns.sql +
 --                         update_validity_status.sql + setup_fixed.sql
+--               CORRIGE automatiquement les types de colonnes INTEGER -> BIGINT
 -- 
 -- Utilisation : psql -U postgres -d mbdhackuity -f init_database.sql
 -- 
 -- Ordre d'exécution :
+--   0. Configuration et nettoyage
 --   1. Connexion à la base
 --   2. Tables de base (CVEs, Assets)
 --   3. Tables de matching et résultats
---   4. Tables de conformité et actions correctives (CORRIGÉES)
+--   4. Tables de conformité et actions correctives
 --   5. Tables d'authentification et groupes
---   6. Tables d'audit et logs (CORRIGÉES)
+--   6. Tables d'audit et logs
 --   7. Tables CPE et mappings
 --   8. Tables d'obsolescence technologique
 --   9. Vues et fonctions
 --  10. Données initiales
 --  11. Permissions
---  12. Vérifications finales
+--  12. Correction automatique des types de colonnes
+--  13. Vérifications finales
 -- 
 -- Date : 2026-01-06
+-- Dernière modification : 2026-01-06 - Ajout de corrections automatiques
 -- ========================================
 
 \c mbdhackuity
 
 -- ========================================
--- PARTIE 1: TABLES DE BASE - CVEs
+-- PARTIE 0: CONFIGURATION INITIALE
 -- ========================================
 
-DROP TABLE IF EXISTS cves CASCADE;
+-- Désactiver temporairement les contraintes pour faciliter le DROP CASCADE
+SET session_replication_role = 'replica';
+
+-- ========================================
+-- PARTIE 1: TABLES DE BASE - CVEs
+-- ========================================
 
 CREATE TABLE cves (
     id BIGSERIAL PRIMARY KEY,
@@ -67,8 +76,6 @@ CREATE INDEX IF NOT EXISTS idx_cves_assigner ON cves(assigner);
 -- PARTIE 2: TABLES DE BASE - ASSETS
 -- ========================================
 
-DROP TABLE IF EXISTS asset_groups CASCADE;
-
 CREATE TABLE asset_groups (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE,
@@ -79,8 +86,6 @@ CREATE TABLE asset_groups (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_by VARCHAR(100)
 );
-
-DROP TABLE IF EXISTS assets CASCADE;
 
 CREATE TABLE assets (
     id BIGSERIAL PRIMARY KEY,
@@ -127,8 +132,6 @@ CREATE INDEX IF NOT EXISTS idx_assets_scan_package ON assets(scan_name, package_
 -- PARTIE 3: TABLES DE MATCHING ET RÉSULTATS
 -- ========================================
 
-DROP TABLE IF EXISTS cve_matches CASCADE;
-
 CREATE TABLE cve_matches (
     id BIGSERIAL PRIMARY KEY,
     cve_id VARCHAR(50),
@@ -142,8 +145,6 @@ CREATE TABLE cve_matches (
 
 CREATE INDEX IF NOT EXISTS idx_matches_cve ON cve_matches(cve_id);
 CREATE INDEX IF NOT EXISTS idx_matches_asset ON cve_matches(asset_id);
-
-DROP TABLE IF EXISTS vulnerability_results CASCADE;
 
 CREATE TABLE vulnerability_results (
     id BIGSERIAL PRIMARY KEY,
@@ -221,8 +222,6 @@ CREATE INDEX IF NOT EXISTS idx_vulnerability_results_obsolescence ON vulnerabili
 -- ========================================
 
 -- IMPORTANT: Structure corrigée selon l'entité JPA ComplianceRule
--- Supprimer et recréer pour s'assurer de la bonne structure
-DROP TABLE IF EXISTS compliance_rules CASCADE;
 
 CREATE TABLE compliance_rules (
     id BIGSERIAL PRIMARY KEY,
@@ -244,8 +243,6 @@ CREATE INDEX IF NOT EXISTS idx_compliance_framework ON compliance_rules(framewor
 CREATE INDEX IF NOT EXISTS idx_compliance_level ON compliance_rules(level);
 CREATE INDEX IF NOT EXISTS idx_compliance_status ON compliance_rules(status);
 
-DROP TABLE IF EXISTS cve_history CASCADE;
-
 CREATE TABLE cve_history (
     id BIGSERIAL PRIMARY KEY,
     cve_id VARCHAR(50) NOT NULL,
@@ -259,8 +256,6 @@ CREATE TABLE cve_history (
 
 CREATE INDEX IF NOT EXISTS idx_history_cve ON cve_history(cve_id);
 CREATE INDEX IF NOT EXISTS idx_history_date ON cve_history(change_date);
-
-DROP TABLE IF EXISTS corrective_actions CASCADE;
 
 CREATE TABLE corrective_actions (
     id BIGSERIAL PRIMARY KEY,
@@ -281,8 +276,6 @@ CREATE INDEX IF NOT EXISTS idx_actions_status ON corrective_actions(status);
 -- PARTIE 5: TABLES D'AUTHENTIFICATION
 -- ========================================
 
-DROP TABLE IF EXISTS users CASCADE;
-
 CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -300,8 +293,6 @@ CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 CREATE INDEX IF NOT EXISTS idx_users_enabled ON users(enabled);
-
-DROP TABLE IF EXISTS group_users CASCADE;
 
 CREATE TABLE group_users (
     group_id BIGINT NOT NULL,
@@ -321,8 +312,6 @@ CREATE INDEX IF NOT EXISTS idx_group_users_group_id ON group_users(group_id);
 -- ========================================
 
 -- IMPORTANT: Structure corrigée selon l'entité JPA AuditLog
--- Supprimer et recréer pour s'assurer de la bonne structure
-DROP TABLE IF EXISTS audit_logs CASCADE;
 
 CREATE TABLE audit_logs (
     id BIGSERIAL PRIMARY KEY,
@@ -361,8 +350,6 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_action_type ON audit_logs(action_type)
 CREATE INDEX IF NOT EXISTS idx_audit_logs_target ON audit_logs(action_target);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_combined ON audit_logs(user_id, action_type, action_timestamp DESC);
 
-DROP TABLE IF EXISTS group_audit_logs CASCADE;
-
 CREATE TABLE group_audit_logs (
     id BIGSERIAL PRIMARY KEY,
     group_id BIGINT,
@@ -381,8 +368,6 @@ CREATE INDEX IF NOT EXISTS idx_group_audit_performed_at ON group_audit_logs(perf
 -- ========================================
 -- PARTIE 7: TABLES CPE ET MAPPINGS
 -- ========================================
-
-DROP TABLE IF EXISTS cpe_index CASCADE;
 
 CREATE TABLE cpe_index (
     id BIGSERIAL PRIMARY KEY,
@@ -406,7 +391,6 @@ CREATE INDEX IF NOT EXISTS idx_cpe_version ON cpe_index(version);
 CREATE INDEX IF NOT EXISTS idx_cpe_vendor_product ON cpe_index(vendor, product);
 
 -- New table: scans
-DROP TABLE IF EXISTS scans CASCADE;
 
 CREATE TABLE scans (
     id BIGSERIAL PRIMARY KEY,
@@ -421,7 +405,6 @@ CREATE TABLE scans (
 CREATE INDEX idx_scans_scan_name ON scans(scan_name);
 
 -- New table: scan_imports
-DROP TABLE IF EXISTS scan_imports CASCADE;
 
 CREATE TABLE scan_imports (
     id BIGSERIAL PRIMARY KEY,
@@ -439,7 +422,6 @@ CREATE TABLE scan_imports (
 );
 
 -- New table: scan_import_logs
-DROP TABLE IF EXISTS scan_import_logs CASCADE;
 
 CREATE TABLE scan_import_logs (
     id BIGSERIAL PRIMARY KEY,
@@ -454,7 +436,6 @@ CREATE TABLE scan_import_logs (
 CREATE INDEX idx_scan_import_logs_scan_import_id ON scan_import_logs(scan_import_id);
 
 -- New table: cve_justification_history
-DROP TABLE IF EXISTS cve_justification_history CASCADE;
 
 CREATE TABLE cve_justification_history (
     id BIGSERIAL PRIMARY KEY,
@@ -486,7 +467,6 @@ CREATE INDEX idx_cve_justification_history_cve_id ON cve_justification_history(c
 CREATE INDEX idx_cve_justification_history_asset_id ON cve_justification_history(asset_id);
 
 -- New table: justification_attachments
-DROP TABLE IF EXISTS justification_attachments CASCADE;
 
 CREATE TABLE justification_attachments (
     id BIGSERIAL PRIMARY KEY,
@@ -502,8 +482,6 @@ CREATE TABLE justification_attachments (
 );
 
 CREATE INDEX idx_justification_attachments_vulnerability_id ON justification_attachments(vulnerability_id);
-
-DROP TABLE IF EXISTS cpe_mappings CASCADE;
 
 CREATE TABLE cpe_mappings (
     id BIGSERIAL PRIMARY KEY,
@@ -534,8 +512,6 @@ CREATE INDEX IF NOT EXISTS idx_cpe_mappings_usage_count ON cpe_mappings(usage_co
 -- ========================================
 -- PARTIE 8: TABLES D'OBSOLESCENCE TECHNOLOGIQUE
 -- ========================================
-
-DROP TABLE IF EXISTS technology_obsolescence CASCADE;
 
 CREATE TABLE technology_obsolescence (
     id BIGSERIAL PRIMARY KEY,
@@ -773,7 +749,190 @@ GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO postgres;
 RAISE NOTICE 'Permissions accordées à mbdhackuity et postgres';
 
 -- ========================================
--- PARTIE 14: COMMENTAIRES SUR LES OBJETS
+-- PARTIE 14: CORRECTION AUTOMATIQUE DES TYPES DE COLONNES
+-- ========================================
+
+-- Cette section garantit que toutes les colonnes référençant des IDs
+-- sont bien de type BIGINT pour la compatibilité avec Hibernate/JPA
+DO $$
+DECLARE
+    correction_count INTEGER := 0;
+BEGIN
+    RAISE NOTICE '';
+    RAISE NOTICE '========================================';
+    RAISE NOTICE '🔧 VÉRIFICATION ET CORRECTION DES TYPES DE COLONNES';
+    RAISE NOTICE '========================================';
+    RAISE NOTICE '';
+    
+    -- Correction cve_matches.asset_id
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'cve_matches' 
+        AND column_name = 'asset_id' 
+        AND data_type = 'integer'
+    ) THEN
+        ALTER TABLE cve_matches ALTER COLUMN asset_id TYPE BIGINT;
+        correction_count := correction_count + 1;
+        RAISE NOTICE '✅ Correction: cve_matches.asset_id → BIGINT';
+    ELSE
+        RAISE NOTICE '✓ cve_matches.asset_id est déjà BIGINT';
+    END IF;
+    
+    -- Correction vulnerability_results.asset_id
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'vulnerability_results' 
+        AND column_name = 'asset_id' 
+        AND data_type = 'integer'
+    ) THEN
+        ALTER TABLE vulnerability_results ALTER COLUMN asset_id TYPE BIGINT;
+        correction_count := correction_count + 1;
+        RAISE NOTICE '✅ Correction: vulnerability_results.asset_id → BIGINT';
+    ELSE
+        RAISE NOTICE '✓ vulnerability_results.asset_id est déjà BIGINT';
+    END IF;
+    
+    -- Correction cve_justification_history.asset_id
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'cve_justification_history' 
+        AND column_name = 'asset_id' 
+        AND data_type = 'integer'
+    ) THEN
+        ALTER TABLE cve_justification_history ALTER COLUMN asset_id TYPE BIGINT;
+        correction_count := correction_count + 1;
+        RAISE NOTICE '✅ Correction: cve_justification_history.asset_id → BIGINT';
+    ELSE
+        RAISE NOTICE '✓ cve_justification_history.asset_id est déjà BIGINT';
+    END IF;
+    
+    -- Correction assets.parent_asset_id
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'assets' 
+        AND column_name = 'parent_asset_id' 
+        AND data_type = 'integer'
+    ) THEN
+        ALTER TABLE assets ALTER COLUMN parent_asset_id TYPE BIGINT;
+        correction_count := correction_count + 1;
+        RAISE NOTICE '✅ Correction: assets.parent_asset_id → BIGINT';
+    ELSE
+        RAISE NOTICE '✓ assets.parent_asset_id est déjà BIGINT';
+    END IF;
+    
+    -- Correction assets.previous_version_id
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'assets' 
+        AND column_name = 'previous_version_id' 
+        AND data_type = 'integer'
+    ) THEN
+        ALTER TABLE assets ALTER COLUMN previous_version_id TYPE BIGINT;
+        correction_count := correction_count + 1;
+        RAISE NOTICE '✅ Correction: assets.previous_version_id → BIGINT';
+    ELSE
+        RAISE NOTICE '✓ assets.previous_version_id est déjà BIGINT';
+    END IF;
+    
+    -- Correction group_users.group_id
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'group_users' 
+        AND column_name = 'group_id' 
+        AND data_type = 'integer'
+    ) THEN
+        ALTER TABLE group_users ALTER COLUMN group_id TYPE BIGINT;
+        correction_count := correction_count + 1;
+        RAISE NOTICE '✅ Correction: group_users.group_id → BIGINT';
+    ELSE
+        RAISE NOTICE '✓ group_users.group_id est déjà BIGINT';
+    END IF;
+    
+    -- Correction group_users.user_id
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'group_users' 
+        AND column_name = 'user_id' 
+        AND data_type = 'integer'
+    ) THEN
+        ALTER TABLE group_users ALTER COLUMN user_id TYPE BIGINT;
+        correction_count := correction_count + 1;
+        RAISE NOTICE '✅ Correction: group_users.user_id → BIGINT';
+    ELSE
+        RAISE NOTICE '✓ group_users.user_id est déjà BIGINT';
+    END IF;
+    
+    -- Correction group_audit_logs.group_id
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'group_audit_logs' 
+        AND column_name = 'group_id' 
+        AND data_type = 'integer'
+    ) THEN
+        ALTER TABLE group_audit_logs ALTER COLUMN group_id TYPE BIGINT;
+        correction_count := correction_count + 1;
+        RAISE NOTICE '✅ Correction: group_audit_logs.group_id → BIGINT';
+    ELSE
+        RAISE NOTICE '✓ group_audit_logs.group_id est déjà BIGINT';
+    END IF;
+    
+    -- Correction group_audit_logs.target_id
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'group_audit_logs' 
+        AND column_name = 'target_id' 
+        AND data_type = 'integer'
+    ) THEN
+        ALTER TABLE group_audit_logs ALTER COLUMN target_id TYPE BIGINT;
+        correction_count := correction_count + 1;
+        RAISE NOTICE '✅ Correction: group_audit_logs.target_id → BIGINT';
+    ELSE
+        RAISE NOTICE '✓ group_audit_logs.target_id est déjà BIGINT';
+    END IF;
+    
+    -- Correction scan_import_logs.scan_import_id
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'scan_import_logs' 
+        AND column_name = 'scan_import_id' 
+        AND data_type = 'integer'
+    ) THEN
+        ALTER TABLE scan_import_logs ALTER COLUMN scan_import_id TYPE BIGINT;
+        correction_count := correction_count + 1;
+        RAISE NOTICE '✅ Correction: scan_import_logs.scan_import_id → BIGINT';
+    ELSE
+        RAISE NOTICE '✓ scan_import_logs.scan_import_id est déjà BIGINT';
+    END IF;
+    
+    -- Correction justification_attachments.vulnerability_id
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'justification_attachments' 
+        AND column_name = 'vulnerability_id' 
+        AND data_type = 'integer'
+    ) THEN
+        ALTER TABLE justification_attachments ALTER COLUMN vulnerability_id TYPE BIGINT;
+        correction_count := correction_count + 1;
+        RAISE NOTICE '✅ Correction: justification_attachments.vulnerability_id → BIGINT';
+    ELSE
+        RAISE NOTICE '✓ justification_attachments.vulnerability_id est déjà BIGINT';
+    END IF;
+    
+    RAISE NOTICE '';
+    IF correction_count > 0 THEN
+        RAISE NOTICE '🔧 % colonnes corrigées de INTEGER vers BIGINT', correction_count;
+    ELSE
+        RAISE NOTICE '✅ Aucune correction nécessaire - tous les types sont corrects';
+    END IF;
+    RAISE NOTICE '========================================';
+    RAISE NOTICE '';
+END $$;
+
+-- Réactiver les contraintes
+SET session_replication_role = 'origin';
+
+-- ========================================
+-- PARTIE 15: COMMENTAIRES SUR LES OBJETS
 -- ========================================
 
 COMMENT ON TABLE technology_obsolescence IS 'Table pour gérer l''obsolescence des technologies et recommander les mises à jour';
@@ -784,7 +943,7 @@ COMMENT ON TABLE cpe_mappings IS 'Mappings personnalisés entre packages et CPE 
 COMMENT ON VIEW vulnerabilities_with_obsolescence IS 'Vue combinant les vulnérabilités avec les informations d''obsolescence technologique';
 
 -- ========================================
--- PARTIE 15: VÉRIFICATIONS FINALES
+-- PARTIE 16: VÉRIFICATIONS FINALES
 -- ========================================
 
 DO $$
@@ -793,6 +952,8 @@ DECLARE
     view_count INTEGER;
     function_count INTEGER;
     rec RECORD;
+    bigint_check RECORD;
+    all_bigint BOOLEAN := TRUE;
 BEGIN
     RAISE NOTICE '';
     RAISE NOTICE '========================================';
@@ -841,15 +1002,49 @@ BEGIN
     END LOOP;
     
     RAISE NOTICE '';
+    
+    -- Vérification finale des types de colonnes critiques
+    RAISE NOTICE '🔍 Vérification des types de colonnes critiques:';
+    FOR bigint_check IN
+        SELECT 
+            table_name, 
+            column_name, 
+            data_type,
+            CASE 
+                WHEN data_type = 'bigint' THEN '✅'
+                WHEN data_type = 'integer' THEN '❌'
+                ELSE '⚠️'
+            END as status
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND column_name IN ('asset_id', 'parent_asset_id', 'previous_version_id', 
+                             'group_id', 'user_id', 'target_id', 'scan_import_id', 'vulnerability_id')
+        ORDER BY table_name, column_name
+    LOOP
+        RAISE NOTICE '  % %.% : %', bigint_check.status, bigint_check.table_name, 
+                     bigint_check.column_name, bigint_check.data_type;
+        IF bigint_check.data_type != 'bigint' THEN
+            all_bigint := FALSE;
+        END IF;
+    END LOOP;
+    
+    RAISE NOTICE '';
+    
+    IF all_bigint THEN
+        RAISE NOTICE '✅ VALIDATION: Tous les types de colonnes sont corrects (BIGINT)';
+    ELSE
+        RAISE NOTICE '⚠️  ATTENTION: Certaines colonnes ne sont pas en BIGINT';
+        RAISE NOTICE '   Exécutez le script fix_column_types.sql pour corriger';
+    END IF;
+    
+    RAISE NOTICE '';
     RAISE NOTICE '⚠️  IMPORTANT:';
     RAISE NOTICE '  1. Utilisateur par défaut: maintenance / maintenance';
     RAISE NOTICE '  2. Changez le mot de passe après la première connexion';
     RAISE NOTICE '  3. Groupe "Non classé" créé automatiquement';
     RAISE NOTICE '  4. Configurez application.properties avec:';
     RAISE NOTICE '     spring.jpa.hibernate.ddl-auto=validate';
-    RAISE NOTICE '';
-    RAISE NOTICE '========================================';
-    RAISE NOTICE '🚀 Vous pouvez maintenant démarrer l''application';
+    RAISE NOTICE '  5. Base de données utilisateur: mbdhackuity / vmut2026';
     RAISE NOTICE '========================================';
     RAISE NOTICE '';
 END $$;
