@@ -618,32 +618,32 @@ WHERE validity_status = 'Non disponible';
 -- Créer l'utilisateur de l'application s'il n'existe pas
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT FROM pg_catalog.pg_user WHERE usename = 'vmut_app') THEN
-        CREATE USER vmut_app WITH PASSWORD 'vmut2026';
-        RAISE NOTICE 'Utilisateur vmut_app créé';
+    IF NOT EXISTS (SELECT FROM pg_catalog.pg_user WHERE usename = 'mbdhackuity') THEN
+        CREATE USER mbdhackuity WITH PASSWORD 'vmut2026';
+        RAISE NOTICE 'Utilisateur mbdhackuity créé';
     END IF;
 END $$;
 
--- Accorder toutes les permissions à vmut_app et postgres
-GRANT ALL PRIVILEGES ON DATABASE cve_toolbox TO vmut_app;
-GRANT ALL PRIVILEGES ON SCHEMA public TO vmut_app;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO vmut_app;
-GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO vmut_app;
-GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO vmut_app;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO vmut_app;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO vmut_app;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO vmut_app;
+-- Accorder toutes les permissions à mbdhackuity et postgres
+GRANT ALL PRIVILEGES ON DATABASE cve_toolbox TO mbdhackuity;
+GRANT ALL PRIVILEGES ON SCHEMA public TO mbdhackuity;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO mbdhackuity;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO mbdhackuity;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO mbdhackuity;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO mbdhackuity;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO mbdhackuity;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO mbdhackuity;
 
--- Rendre vmut_app propriétaire de toutes les tables pour permettre ALTER TABLE
+-- Rendre mbdhackuity propriétaire de toutes les tables pour permettre ALTER TABLE
 DO $$
 DECLARE
     r RECORD;
 BEGIN
     FOR r IN SELECT tablename FROM pg_tables WHERE schemaname = 'public' LOOP
-        EXECUTE 'ALTER TABLE ' || quote_ident(r.tablename) || ' OWNER TO vmut_app';
+        EXECUTE 'ALTER TABLE ' || quote_ident(r.tablename) || ' OWNER TO mbdhackuity';
     END LOOP;
     FOR r IN SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema = 'public' LOOP
-        EXECUTE 'ALTER SEQUENCE ' || quote_ident(r.sequence_name) || ' OWNER TO vmut_app';
+        EXECUTE 'ALTER SEQUENCE ' || quote_ident(r.sequence_name) || ' OWNER TO mbdhackuity';
     END LOOP;
 END $$;
 
@@ -651,7 +651,7 @@ END $$;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO postgres;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO postgres;
 
-RAISE NOTICE 'Permissions accordées à vmut_app et postgres';
+RAISE NOTICE 'Permissions accordées à mbdhackuity et postgres';
 
 -- ========================================
 -- PARTIE 14: COMMENTAIRES SUR LES OBJETS
