@@ -176,14 +176,30 @@ CREATE TABLE vulnerability_results (
     status_updated_by VARCHAR(100),
     rssi_comment TEXT,
     user_comment TEXT,
+    -- Statut RSSI
+    rssi_status VARCHAR(50) DEFAULT 'A traiter',
+    -- Statut Métier
+    metier_status VARCHAR(50) DEFAULT 'A traiter',
     -- Colonnes CVSS modifiées (ajustements manuels)
     modified_score DECIMAL(3,1),
     modified_severity VARCHAR(20),
     modified_vector TEXT,
-    rssi_status VARCHAR(50),
     -- Colonnes de traçabilité des modifications
     modified_at TIMESTAMP,
     modified_by VARCHAR(255),
+    -- Champs enrichis (compatibilité Cyberwatch)
+    epss_score DECIMAL(5,2),
+    exploit_level VARCHAR(50),
+    is_priority BOOLEAN DEFAULT FALSE,
+    is_ignored BOOLEAN DEFAULT FALSE,
+    ignored_date TIMESTAMP,
+    cisa_kev_date TIMESTAMP,
+    cert_fr_ale_date TIMESTAMP,
+    asset_groups TEXT,
+    last_scan_date TIMESTAMP,
+    -- Commentaires analystes et validateurs
+    comments_analyst TEXT,
+    comments_validator TEXT,
     -- Colonnes obsolescence
     obsolescence_detected BOOLEAN DEFAULT FALSE,
     obsolescence_info TEXT,
