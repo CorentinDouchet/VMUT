@@ -132,7 +132,7 @@ DROP TABLE IF EXISTS cve_matches CASCADE;
 CREATE TABLE cve_matches (
     id BIGSERIAL PRIMARY KEY,
     cve_id VARCHAR(50),
-    asset_id INTEGER,
+    asset_id BIGINT,
     match_confidence DECIMAL(3,2),
     matched_on VARCHAR(50),
     match_date TIMESTAMP DEFAULT NOW(),
@@ -148,7 +148,7 @@ DROP TABLE IF EXISTS vulnerability_results CASCADE;
 CREATE TABLE vulnerability_results (
     id BIGSERIAL PRIMARY KEY,
     cve_id VARCHAR(50) NOT NULL,
-    asset_id INTEGER,
+    asset_id BIGINT,
     scan_name VARCHAR(255),
     package_name VARCHAR(255),
     package_version VARCHAR(255),
