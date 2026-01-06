@@ -176,6 +176,11 @@ CREATE TABLE vulnerability_results (
     status_updated_by VARCHAR(100),
     rssi_comment TEXT,
     user_comment TEXT,
+    -- Colonnes CVSS modifiées (ajustements manuels)
+    modified_score DECIMAL(3,1),
+    modified_severity VARCHAR(20),
+    modified_vector TEXT,
+    rssi_status VARCHAR(50),
     -- Colonnes obsolescence
     obsolescence_detected BOOLEAN DEFAULT FALSE,
     obsolescence_info TEXT,
@@ -610,18 +615,43 @@ WHERE validity_status = 'Non disponible';
 -- PARTIE 13: PERMISSIONS
 -- ========================================
 
+-- Créer l'utilisateur de l'application s'il n'existe pas
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_catalog.pg_user WHERE usename = 'vmut_app') THEN
+        CREATE USER vmut_app WITH PASSWORD 'vmut2026';
+        RAISE NOTICE 'Utilisateur vmut_app créé';
+    END IF;
+END $$;
+
+-- Accorder toutes les permissions à vmut_app et postgres
+GRANT ALL PRIVILEGES ON DATABASE cve_toolbox TO vmut_app;
+GRANT ALL PRIVILEGES ON SCHEMA public TO vmut_app;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO vmut_app;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO vmut_app;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO vmut_app;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO vmut_app;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO vmut_app;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT EXECUTE ON FUNCTIONS TO vmut_app;
+
+-- Rendre vmut_app propriétaire de toutes les tables pour permettre ALTER TABLE
 DO $$
 DECLARE
-    app_user TEXT := current_user;
+    r RECORD;
 BEGIN
-    -- Accorder toutes les permissions à l'utilisateur courant
-    EXECUTE format('GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO %I', app_user);
-    EXECUTE format('GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO %I', app_user);
-    EXECUTE format('ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO %I', app_user);
-    EXECUTE format('ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO %I', app_user);
-    
-    RAISE NOTICE 'Permissions accordées à %', app_user;
+    FOR r IN SELECT tablename FROM pg_tables WHERE schemaname = 'public' LOOP
+        EXECUTE 'ALTER TABLE ' || quote_ident(r.tablename) || ' OWNER TO vmut_app';
+    END LOOP;
+    FOR r IN SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema = 'public' LOOP
+        EXECUTE 'ALTER SEQUENCE ' || quote_ident(r.sequence_name) || ' OWNER TO vmut_app';
+    END LOOP;
 END $$;
+
+-- Également accorder à postgres (utilisateur admin)
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO postgres;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO postgres;
+
+RAISE NOTICE 'Permissions accordées à vmut_app et postgres';
 
 -- ========================================
 -- PARTIE 14: COMMENTAIRES SUR LES OBJETS
