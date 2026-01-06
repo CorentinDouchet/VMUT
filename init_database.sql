@@ -100,7 +100,7 @@ CREATE TABLE assets (
     hostname VARCHAR(255),
     scan_date TIMESTAMP DEFAULT NOW(),
     created_at TIMESTAMP DEFAULT NOW(),
-    raw_data TEXT,
+    raw_data JSONB,
     -- STB_REQ_0102
     serial_number VARCHAR(100),
     part_number VARCHAR(100),
@@ -169,7 +169,7 @@ CREATE TABLE vulnerability_results (
     match_confidence DECIMAL(3,2),
     match_type VARCHAR(50),
     validity_status VARCHAR(50) DEFAULT 'valid',
-    cve_references TEXT,
+    cve_references JSONB,
     -- STB_REQ_0260 (double statut)
     treatment_status VARCHAR(50) DEFAULT 'A_TRAITER' CHECK (treatment_status IN ('A_TRAITER', 'EN_COURS', 'TRAITE')),
     business_status VARCHAR(50) CHECK (business_status IN ('JUSTIFIEE', 'ACCEPTEE', 'ATTENUEE', 'REMEDIEE') OR business_status IS NULL),
@@ -199,7 +199,7 @@ CREATE TABLE vulnerability_results (
     asset_groups TEXT,
     last_scan_date TIMESTAMP,
     -- Commentaires
-    comments TEXT,
+    comments JSONB,
     -- Commentaires analystes et validateurs
     comments_analyst TEXT,
     comments_validator TEXT,
@@ -449,12 +449,12 @@ CREATE TABLE cve_justification_history (
     base_severity VARCHAR(20),
     version_cvss VARCHAR(20),
     technologies_affectees TEXT,
-    cpe_criteria TEXT,
+    cpe_criteria JSONB,
     cwe TEXT,
     exploit_poc VARCHAR(10),
     exploit_references TEXT,
-    comments_analyst TEXT,
-    comments_validator TEXT,
+    comments_analyst JSONB,
+    comments_validator JSONB,
     justified_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     first_scan_name VARCHAR(255),
     asset_id BIGINT,
