@@ -37,7 +37,7 @@
 DROP TABLE IF EXISTS cves CASCADE;
 
 CREATE TABLE cves (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     cve_id VARCHAR(50) UNIQUE NOT NULL,
     source_identifier VARCHAR(255),
     published TIMESTAMP,
@@ -83,7 +83,7 @@ CREATE TABLE asset_groups (
 DROP TABLE IF EXISTS assets CASCADE;
 
 CREATE TABLE assets (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     type VARCHAR(50) DEFAULT 'CYBERWATCH',
@@ -130,7 +130,7 @@ CREATE INDEX IF NOT EXISTS idx_assets_scan_package ON assets(scan_name, package_
 DROP TABLE IF EXISTS cve_matches CASCADE;
 
 CREATE TABLE cve_matches (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     cve_id VARCHAR(50),
     asset_id INTEGER,
     match_confidence DECIMAL(3,2),
@@ -146,7 +146,7 @@ CREATE INDEX IF NOT EXISTS idx_matches_asset ON cve_matches(asset_id);
 DROP TABLE IF EXISTS vulnerability_results CASCADE;
 
 CREATE TABLE vulnerability_results (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     cve_id VARCHAR(50) NOT NULL,
     asset_id INTEGER,
     scan_name VARCHAR(255),
@@ -263,7 +263,7 @@ CREATE INDEX IF NOT EXISTS idx_history_date ON cve_history(change_date);
 DROP TABLE IF EXISTS corrective_actions CASCADE;
 
 CREATE TABLE corrective_actions (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     cve_id VARCHAR(50) NOT NULL,
     action_type VARCHAR(100),
     action_description TEXT,
