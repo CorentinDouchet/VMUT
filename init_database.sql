@@ -387,12 +387,14 @@ DROP TABLE IF EXISTS cpe_index CASCADE;
 CREATE TABLE cpe_index (
     id BIGSERIAL PRIMARY KEY,
     cve_id VARCHAR(50) NOT NULL,
-    cpe_criteria VARCHAR(500) NOT NULL,
+    cpe_string TEXT,
     vendor VARCHAR(255),
     product VARCHAR(255),
-    version VARCHAR(100),
-    version_start VARCHAR(100),
-    version_end VARCHAR(100),
+    version VARCHAR(255),
+    version_start_including VARCHAR(100),
+    version_start_excluding VARCHAR(100),
+    version_end_including VARCHAR(100),
+    version_end_excluding VARCHAR(100),
     is_vulnerable BOOLEAN DEFAULT true,
     CONSTRAINT cpe_index_cve_id_fkey FOREIGN KEY (cve_id) REFERENCES cves(cve_id) ON DELETE CASCADE
 );
@@ -402,6 +404,104 @@ CREATE INDEX IF NOT EXISTS idx_cpe_vendor ON cpe_index(vendor);
 CREATE INDEX IF NOT EXISTS idx_cpe_product ON cpe_index(product);
 CREATE INDEX IF NOT EXISTS idx_cpe_version ON cpe_index(version);
 CREATE INDEX IF NOT EXISTS idx_cpe_vendor_product ON cpe_index(vendor, product);
+
+-- New table: scans
+DROP TABLE IF EXISTS scans CASCADE;
+
+CREATE TABLE scans (
+    id BIGSERIAL PRIMARY KEY,
+    scan_name VARCHAR(255) UNIQUE NOT NULL,
+    os_name VARCHAR(100),
+    os_version VARCHAR(100),
+    hostname VARCHAR(255),
+    scan_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_scans_scan_name ON scans(scan_name);
+
+-- New table: scan_imports
+DROP TABLE IF EXISTS scan_imports CASCADE;
+
+CREATE TABLE scan_imports (
+    id BIGSERIAL PRIMARY KEY,
+    scan_name VARCHAR(255) UNIQUE NOT NULL,
+    file_name VARCHAR(255),
+    status VARCHAR(50) DEFAULT 'pending',
+    total_packages INTEGER DEFAULT 0,
+    imported_packages INTEGER DEFAULT 0,
+    failed_packages INTEGER DEFAULT 0,
+    error_message TEXT,
+    started_at TIMESTAMP,
+    completed_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- New table: scan_import_logs
+DROP TABLE IF EXISTS scan_import_logs CASCADE;
+
+CREATE TABLE scan_import_logs (
+    id BIGSERIAL PRIMARY KEY,
+    scan_import_id BIGINT,
+    level VARCHAR(20),
+    message TEXT,
+    package_name VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT scan_import_logs_scan_import_id_fkey FOREIGN KEY (scan_import_id) REFERENCES scan_imports(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_scan_import_logs_scan_import_id ON scan_import_logs(scan_import_id);
+
+-- New table: cve_justification_history
+DROP TABLE IF EXISTS cve_justification_history CASCADE;
+
+CREATE TABLE cve_justification_history (
+    id BIGSERIAL PRIMARY KEY,
+    cve_id VARCHAR(50) UNIQUE NOT NULL,
+    package_name VARCHAR(255),
+    package_version VARCHAR(100),
+    cve_description TEXT,
+    base_score DECIMAL(3,1),
+    base_severity VARCHAR(20),
+    version_cvss VARCHAR(20),
+    technologies_affectees TEXT,
+    cpe_criteria JSONB,
+    cwe TEXT,
+    exploit_poc VARCHAR(10),
+    exploit_references TEXT,
+    comments_analyst JSONB,
+    comments_validator JSONB,
+    justified_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    first_scan_name VARCHAR(255),
+    asset_id BIGINT,
+    vector_string TEXT,
+    published_date TIMESTAMP,
+    last_modified_date TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_cve_justification_history_cve_id ON cve_justification_history(cve_id);
+CREATE INDEX idx_cve_justification_history_asset_id ON cve_justification_history(asset_id);
+
+-- New table: justification_attachments
+DROP TABLE IF EXISTS justification_attachments CASCADE;
+
+CREATE TABLE justification_attachments (
+    id BIGSERIAL PRIMARY KEY,
+    filename VARCHAR(255) NOT NULL,
+    file_type VARCHAR(100) NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
+    file_size BIGINT,
+    upload_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    uploaded_by VARCHAR(100) NOT NULL,
+    description TEXT,
+    vulnerability_id BIGINT NOT NULL,
+    CONSTRAINT justification_attachments_vulnerability_id_fkey FOREIGN KEY (vulnerability_id) REFERENCES vulnerability_results(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_justification_attachments_vulnerability_id ON justification_attachments(vulnerability_id);
 
 DROP TABLE IF EXISTS cpe_mappings CASCADE;
 
