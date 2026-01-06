@@ -34,7 +34,9 @@
 -- PARTIE 1: TABLES DE BASE - CVEs
 -- ========================================
 
-CREATE TABLE IF NOT EXISTS cves (
+DROP TABLE IF EXISTS cves CASCADE;
+
+CREATE TABLE cves (
     id SERIAL PRIMARY KEY,
     cve_id VARCHAR(50) UNIQUE NOT NULL,
     source_identifier VARCHAR(255),
@@ -65,7 +67,9 @@ CREATE INDEX IF NOT EXISTS idx_cves_assigner ON cves(assigner);
 -- PARTIE 2: TABLES DE BASE - ASSETS
 -- ========================================
 
-CREATE TABLE IF NOT EXISTS asset_groups (
+DROP TABLE IF EXISTS asset_groups CASCADE;
+
+CREATE TABLE asset_groups (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE,
     description TEXT,
@@ -76,7 +80,9 @@ CREATE TABLE IF NOT EXISTS asset_groups (
     updated_by VARCHAR(100)
 );
 
-CREATE TABLE IF NOT EXISTS assets (
+DROP TABLE IF EXISTS assets CASCADE;
+
+CREATE TABLE assets (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
@@ -121,7 +127,9 @@ CREATE INDEX IF NOT EXISTS idx_assets_scan_package ON assets(scan_name, package_
 -- PARTIE 3: TABLES DE MATCHING ET RÉSULTATS
 -- ========================================
 
-CREATE TABLE IF NOT EXISTS cve_matches (
+DROP TABLE IF EXISTS cve_matches CASCADE;
+
+CREATE TABLE cve_matches (
     id SERIAL PRIMARY KEY,
     cve_id VARCHAR(50),
     asset_id INTEGER,
@@ -135,7 +143,9 @@ CREATE TABLE IF NOT EXISTS cve_matches (
 CREATE INDEX IF NOT EXISTS idx_matches_cve ON cve_matches(cve_id);
 CREATE INDEX IF NOT EXISTS idx_matches_asset ON cve_matches(asset_id);
 
-CREATE TABLE IF NOT EXISTS vulnerability_results (
+DROP TABLE IF EXISTS vulnerability_results CASCADE;
+
+CREATE TABLE vulnerability_results (
     id SERIAL PRIMARY KEY,
     cve_id VARCHAR(50) NOT NULL,
     asset_id INTEGER,
@@ -187,7 +197,10 @@ CREATE INDEX IF NOT EXISTS idx_vulnerability_results_obsolescence ON vulnerabili
 -- ========================================
 
 -- IMPORTANT: Structure corrigée selon l'entité JPA ComplianceRule
-CREATE TABLE IF NOT EXISTS compliance_rules (
+-- Supprimer et recréer pour s'assurer de la bonne structure
+DROP TABLE IF EXISTS compliance_rules CASCADE;
+
+CREATE TABLE compliance_rules (
     id BIGSERIAL PRIMARY KEY,
     reference VARCHAR(255) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -207,7 +220,9 @@ CREATE INDEX IF NOT EXISTS idx_compliance_framework ON compliance_rules(framewor
 CREATE INDEX IF NOT EXISTS idx_compliance_level ON compliance_rules(level);
 CREATE INDEX IF NOT EXISTS idx_compliance_status ON compliance_rules(status);
 
-CREATE TABLE IF NOT EXISTS cve_history (
+DROP TABLE IF EXISTS cve_history CASCADE;
+
+CREATE TABLE cve_history (
     id BIGSERIAL PRIMARY KEY,
     cve_id VARCHAR(50) NOT NULL,
     change_date TIMESTAMP DEFAULT NOW(),
@@ -221,7 +236,9 @@ CREATE TABLE IF NOT EXISTS cve_history (
 CREATE INDEX IF NOT EXISTS idx_history_cve ON cve_history(cve_id);
 CREATE INDEX IF NOT EXISTS idx_history_date ON cve_history(change_date);
 
-CREATE TABLE IF NOT EXISTS corrective_actions (
+DROP TABLE IF EXISTS corrective_actions CASCADE;
+
+CREATE TABLE corrective_actions (
     id SERIAL PRIMARY KEY,
     cve_id VARCHAR(50) NOT NULL,
     action_type VARCHAR(100),
@@ -240,7 +257,9 @@ CREATE INDEX IF NOT EXISTS idx_actions_status ON corrective_actions(status);
 -- PARTIE 5: TABLES D'AUTHENTIFICATION
 -- ========================================
 
-CREATE TABLE IF NOT EXISTS users (
+DROP TABLE IF EXISTS users CASCADE;
+
+CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
@@ -258,7 +277,9 @@ CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
 CREATE INDEX IF NOT EXISTS idx_users_enabled ON users(enabled);
 
-CREATE TABLE IF NOT EXISTS group_users (
+DROP TABLE IF EXISTS group_users CASCADE;
+
+CREATE TABLE group_users (
     group_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
     assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -276,7 +297,10 @@ CREATE INDEX IF NOT EXISTS idx_group_users_group_id ON group_users(group_id);
 -- ========================================
 
 -- IMPORTANT: Structure corrigée selon l'entité JPA AuditLog
-CREATE TABLE IF NOT EXISTS audit_logs (
+-- Supprimer et recréer pour s'assurer de la bonne structure
+DROP TABLE IF EXISTS audit_logs CASCADE;
+
+CREATE TABLE audit_logs (
     id BIGSERIAL PRIMARY KEY,
     user_id VARCHAR(100) NOT NULL,
     action_type VARCHAR(100) NOT NULL,
@@ -313,7 +337,9 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_action_type ON audit_logs(action_type)
 CREATE INDEX IF NOT EXISTS idx_audit_logs_target ON audit_logs(action_target);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_combined ON audit_logs(user_id, action_type, action_timestamp DESC);
 
-CREATE TABLE IF NOT EXISTS group_audit_logs (
+DROP TABLE IF EXISTS group_audit_logs CASCADE;
+
+CREATE TABLE group_audit_logs (
     id BIGSERIAL PRIMARY KEY,
     group_id BIGINT,
     action VARCHAR(50) NOT NULL,
@@ -332,7 +358,9 @@ CREATE INDEX IF NOT EXISTS idx_group_audit_performed_at ON group_audit_logs(perf
 -- PARTIE 7: TABLES CPE ET MAPPINGS
 -- ========================================
 
-CREATE TABLE IF NOT EXISTS cpe_index (
+DROP TABLE IF EXISTS cpe_index CASCADE;
+
+CREATE TABLE cpe_index (
     id BIGSERIAL PRIMARY KEY,
     cve_id VARCHAR(50) NOT NULL,
     cpe_criteria VARCHAR(500) NOT NULL,
@@ -351,7 +379,9 @@ CREATE INDEX IF NOT EXISTS idx_cpe_product ON cpe_index(product);
 CREATE INDEX IF NOT EXISTS idx_cpe_version ON cpe_index(version);
 CREATE INDEX IF NOT EXISTS idx_cpe_vendor_product ON cpe_index(vendor, product);
 
-CREATE TABLE IF NOT EXISTS cpe_mappings (
+DROP TABLE IF EXISTS cpe_mappings CASCADE;
+
+CREATE TABLE cpe_mappings (
     id BIGSERIAL PRIMARY KEY,
     package_name VARCHAR(500) NOT NULL,
     package_version VARCHAR(100),
@@ -381,7 +411,9 @@ CREATE INDEX IF NOT EXISTS idx_cpe_mappings_usage_count ON cpe_mappings(usage_co
 -- PARTIE 8: TABLES D'OBSOLESCENCE TECHNOLOGIQUE
 -- ========================================
 
-CREATE TABLE IF NOT EXISTS technology_obsolescence (
+DROP TABLE IF EXISTS technology_obsolescence CASCADE;
+
+CREATE TABLE technology_obsolescence (
     id BIGSERIAL PRIMARY KEY,
     technology_name VARCHAR(255) NOT NULL,
     version_pattern VARCHAR(100),
